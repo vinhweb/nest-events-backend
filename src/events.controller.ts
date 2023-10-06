@@ -5,8 +5,10 @@ import {
   Get,
   HttpCode,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateEventDto } from './create-event.dto';
 import { UpdateEventDto } from './update-event.dto';
@@ -27,12 +29,13 @@ export class EventsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: any) {
-    return await this.repository.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: any) {
+    console.log(typeof id, { id });
+    return await this.repository.findOneBy(id);
   }
 
   @Post()
-  async create(@Body() input: CreateEventDto) {
+  async create(@Body(ValidationPipe) input: CreateEventDto) {
     return await this.repository.save({
       ...input,
       when: new Date(input.when),
@@ -41,7 +44,7 @@ export class EventsController {
 
   @Patch(':id')
   async update(@Param('id') id: any, @Body() input: UpdateEventDto) {
-    const event = await this.repository.findOne(id);
+    const event = await this.repository.findOneBy(id);
 
     return await this.repository.save({
       ...event,
@@ -53,7 +56,7 @@ export class EventsController {
   @Delete(':id')
   @HttpCode(204)
   async remove(@Param('id') id: any) {
-    const event = await this.repository.findOne(id);
+    const event = await this.repository.findOneBy(id);
 
     await this.repository.remove(event);
   }
